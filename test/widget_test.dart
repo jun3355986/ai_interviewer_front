@@ -8,7 +8,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ai_interviewer_front/main.dart';
+import 'package:ai_interviewer_front/ai_interviewer_test.dart';
 
 void main() {
   testWidgets('App starts with login page', (WidgetTester tester) async {

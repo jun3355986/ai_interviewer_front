@@ -51,10 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                 // 副标题
                 const Text(
                   '让面试准备更智能',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF666666),
-                  ),
+                  style: TextStyle(fontSize: 16, color: Color(0xFF666666)),
                 ),
                 const SizedBox(height: 40),
 
@@ -135,10 +132,7 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: const Text(
                 '忘记密码?',
-                style: TextStyle(
-                  color: Color(0xFF4285F4),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Color(0xFF4285F4), fontSize: 14),
               ),
             ),
           ),
@@ -154,10 +148,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               const Text(
                 '还没有账号? ',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF666666),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
               ),
               TextButton(
                 onPressed: () {
@@ -194,10 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   '或',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF999999),
-                  ),
+                  style: TextStyle(fontSize: 14, color: Color(0xFF999999)),
                 ),
               ),
               Expanded(
@@ -381,10 +369,7 @@ class _LoginPageState extends State<LoginPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.2),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.2), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -422,11 +407,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.menu,
-            color: Colors.white,
-            size: 20,
-          ),
+          const Icon(Icons.menu, color: Colors.white, size: 20),
           const SizedBox(width: 8),
           const Text(
             '页面导航',
@@ -458,10 +439,7 @@ class _LoginPageState extends State<LoginPage> {
   /// 显示提示消息
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 }

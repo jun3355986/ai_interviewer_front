@@ -44,7 +44,7 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // 最近活动
-                    _buildActivityHeader(),
+                    _buildActivityHeader(context),
                     const SizedBox(height: 16),
                     _buildActivityList(),
                   ],
@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
             ),
 
             // 底部导航栏
-            _buildBottomNavigationBar(),
+            _buildBottomNavigationBar(context),
           ],
         ),
       ),
@@ -219,23 +219,23 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 20),
 
           // 立即开始按钮
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: InkWell(
-              onTap: () {
-                // TODO: 导航到上传简历页面
-              },
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/upload');
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -365,7 +365,7 @@ class HomePage extends StatelessWidget {
   }
 
   /// 最近活动标题
-  Widget _buildActivityHeader() {
+  Widget _buildActivityHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -379,7 +379,7 @@ class HomePage extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-            // TODO: 导航到历史记录页面
+            Navigator.pushNamed(context, '/history');
           },
           child: const Text(
             '查看全部',
@@ -516,18 +516,17 @@ class HomePage extends StatelessWidget {
   }
 
   /// 底部导航栏
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+        color: Colors.white.withValues(alpha: 0.8),
+        border: const Border(
+          top: BorderSide(
+            color: Color(0x80E5E7EB),
+            width: 0.5,
           ),
-        ],
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -537,49 +536,35 @@ class HomePage extends StatelessWidget {
             icon: Icons.home,
             label: '首页',
             isActive: true,
+            onTap: () {},
           ),
 
-          // 页面导航按钮（特殊样式）
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4E7FF6), Color(0xFF6B9DFF)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF4E7FF6).withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  '页面导航',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          // 面试
+          _buildNavItem(
+            icon: Icons.chat_bubble_outline,
+            label: '面试',
+            isActive: false,
+            onTap: () {
+              Navigator.pushNamed(context, '/upload');
+            },
+          ),
+
+          // 历史
+          _buildNavItem(
+            icon: Icons.access_time,
+            label: '历史',
+            isActive: false,
+            onTap: () {
+              Navigator.pushNamed(context, '/history');
+            },
           ),
 
           // 设置
           _buildNavItem(
-            icon: Icons.settings,
+            icon: Icons.settings_outlined,
             label: '设置',
             isActive: false,
+            onTap: () {},
           ),
         ],
       ),
@@ -591,24 +576,32 @@ class HomePage extends StatelessWidget {
     required IconData icon,
     required String label,
     required bool isActive,
+    required VoidCallback onTap,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? const Color(0xFF4E7FF6) : const Color(0xFF999999),
-          size: 24,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? const Color(0xFF155DFC) : const Color(0xFF99A1AF),
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                color: isActive ? const Color(0xFF155DFC) : const Color(0xFF99A1AF),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isActive ? const Color(0xFF4E7FF6) : const Color(0xFF999999),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

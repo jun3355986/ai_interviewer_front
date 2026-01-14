@@ -5,15 +5,14 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ai_interviewer_front/ai_interviewer_test.dart';
+import 'package:ai_interviewer_front/main.dart';
 
 void main() {
   testWidgets('App starts with login page', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const CupertinoApp(home: InterviewApp()));
+    await tester.pumpWidget(const AIInterviewerApp());
 
     // Verify that login page is displayed
     expect(find.text('AI 面试官助手'), findsOneWidget);

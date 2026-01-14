@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 
 /// AI 面试官助手 - 登录页面
 /// 基于 Figma 设计实现
@@ -59,8 +58,6 @@ class _LoginPageState extends State<LoginPage> {
                 _buildLoginCard(),
                 const SizedBox(height: 24),
 
-                // 底部导航提示
-                _buildPageNavigationHint(),
               ],
             ),
           ),
@@ -396,31 +393,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /// 底部页面导航提示
-  Widget _buildPageNavigationHint() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4285F4),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.menu, color: Colors.white, size: 20),
-          const SizedBox(width: 8),
-          const Text(
-            '页面导航',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 处理登录
   void _handleLogin() {
@@ -432,8 +404,8 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // TODO: 实现实际的登录逻辑
-    _showMessage('登录功能待实现');
+    // 模拟登录成功，导航到首页
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   /// 显示提示消息

@@ -1,66 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'services/auth_service.dart';
+import 'services/job_service.dart';
+import 'models/job.dart';
+import 'models/user.dart';
 
 /// AI 面试官助手 - 主页
 /// 基于 Figma 设计实现
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  User? _currentUser;
+  List<Job> _jobs = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final jobService = Provider.of<JobService>(context, listen: false);
+
+    setState(() => _isLoading = true);
+
+    final user = await authService.getMe();
+    final jobs = await jobService.getJobs();
+
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+        _jobs = jobs;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
       body: SafeArea(
-        child: Column(
-          children: [
-            // 顶部导航栏
-            _buildTopBar(),
-
-            // 主体内容（可滚动）
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 欢迎区域
-                    _buildWelcomeSection(),
-                    const SizedBox(height: 24),
-
-                    // 开始新面试大卡片
-                    _buildStartInterviewCard(context),
-                    const SizedBox(height: 32),
-
-                    // 数据概览
-                    const Text(
-                      '数据概览',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  _buildTopBar(),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: _loadData,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildWelcomeSection(),
+                            const SizedBox(height: 24),
+                            _buildStartInterviewCard(context),
+                            const SizedBox(height: 32),
+                            const Text(
+                              '数据概览',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildDataOverview(),
+                            const SizedBox(height: 32),
+                            _buildActivityHeader(context),
+                            const SizedBox(height: 16),
+                            _buildActivityList(),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildDataOverview(),
-                    const SizedBox(height: 32),
-
-                    // 最近活动
-                    _buildActivityHeader(context),
-                    const SizedBox(height: 16),
-                    _buildActivityList(),
-                  ],
-                ),
+                  ),
+                  _buildBottomNavigationBar(context),
+                ],
               ),
-            ),
-
-            // 底部导航栏
-            _buildBottomNavigationBar(context),
-          ],
-        ),
       ),
     );
   }
 
-  /// 顶部导航栏
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -76,35 +107,34 @@ class HomePage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // 头像
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
               color: const Color(0xFFE8E8E8),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFDDDDDD),
-                width: 2,
-              ),
+              image: _currentUser?.avatarUrl != null
+                  ? DecorationImage(
+                      image: NetworkImage(_currentUser!.avatarUrl!),
+                    )
+                  : null,
+              border: Border.all(color: const Color(0xFFDDDDDD), width: 2),
             ),
+            child: _currentUser?.avatarUrl == null
+                ? const Icon(Icons.person, color: Colors.grey)
+                : null,
           ),
           const SizedBox(width: 12),
-
-          // 问候语
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 '你好',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF999999),
-                ),
+                style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
               ),
               Text(
-                '张明',
-                style: TextStyle(
+                _currentUser?.nickname ?? _currentUser?.username ?? '加载中...',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1A1A1A),
@@ -168,10 +198,7 @@ class HomePage extends StatelessWidget {
         SizedBox(height: 8),
         Text(
           '准备好开始新的面试练习了吗？',
-          style: TextStyle(
-            fontSize: 15,
-            color: Color(0xFF666666),
-          ),
+          style: TextStyle(fontSize: 15, color: Color(0xFF666666)),
         ),
       ],
     );
@@ -211,10 +238,7 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             '上传简历，开始AI模拟面试',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.white70),
           ),
           const SizedBox(height: 20),
 
@@ -248,11 +272,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: Color(0xFF4E7FF6),
-                    size: 18,
-                  ),
+                  Icon(Icons.arrow_forward, color: Color(0xFF4E7FF6), size: 18),
                 ],
               ),
             ),
@@ -353,10 +373,7 @@ class HomePage extends StatelessWidget {
           // 标签
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF999999),
-            ),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -383,10 +400,7 @@ class HomePage extends StatelessWidget {
           },
           child: const Text(
             '查看全部',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF4E7FF6),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF4E7FF6)),
           ),
         ),
       ],
@@ -395,29 +409,28 @@ class HomePage extends StatelessWidget {
 
   /// 最近活动列表
   Widget _buildActivityList() {
+    if (_jobs.isEmpty) {
+      return Container(
+        height: 150,
+        alignment: Alignment.center,
+        child: const Text('暂无职位信息', style: TextStyle(color: Colors.grey)),
+      );
+    }
     return Column(
-      children: [
-        _buildActivityItem(
-          title: '前端开发面试',
-          date: '2024-12-10',
-          duration: '25分钟',
-          score: 88,
-        ),
-        const SizedBox(height: 12),
-        _buildActivityItem(
-          title: '后端工程师面试',
-          date: '2024-12-08',
-          duration: '30分钟',
-          score: 92,
-        ),
-        const SizedBox(height: 12),
-        _buildActivityItem(
-          title: 'UI设计师面试',
-          date: '2024-12-05',
-          duration: '20分钟',
-          score: 90,
-        ),
-      ],
+      children: _jobs
+          .map(
+            (job) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildActivityItem(
+                title: job.title,
+                date: job.company ?? '未知公司',
+                duration: job.location ?? '未知地点',
+                score: 0, // 初始分数为0或根据业务逻辑显示
+                job: job,
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -427,6 +440,7 @@ class HomePage extends StatelessWidget {
     required String date,
     required String duration,
     required int score,
+    required Job job,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -522,10 +536,7 @@ class HomePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.8),
         border: const Border(
-          top: BorderSide(
-            color: Color(0x80E5E7EB),
-            width: 0.5,
-          ),
+          top: BorderSide(color: Color(0x80E5E7EB), width: 0.5),
         ),
       ),
       child: Row(
@@ -588,7 +599,9 @@ class HomePage extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFF155DFC) : const Color(0xFF99A1AF),
+              color: isActive
+                  ? const Color(0xFF155DFC)
+                  : const Color(0xFF99A1AF),
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -596,7 +609,9 @@ class HomePage extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 16,
-                color: isActive ? const Color(0xFF155DFC) : const Color(0xFF99A1AF),
+                color: isActive
+                    ? const Color(0xFF155DFC)
+                    : const Color(0xFF99A1AF),
               ),
             ),
           ],

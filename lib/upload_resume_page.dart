@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'services/job_service.dart';
 
 /// AI 面试官助手 - 简历上传页面
 /// 基于 Figma 设计实现
@@ -64,10 +66,7 @@ class _UploadResumePageState extends State<UploadResumePage> {
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFE5E7EB),
-            width: 0.5,
-          ),
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 0.5),
         ),
       ),
       child: Row(
@@ -109,11 +108,7 @@ class _UploadResumePageState extends State<UploadResumePage> {
   Widget _buildDescription() {
     return const Text(
       '上传您的简历，AI 面试官将根据您的背景进行针对性面试',
-      style: TextStyle(
-        fontSize: 14,
-        color: Color(0xFF6A7282),
-        height: 1.5,
-      ),
+      style: TextStyle(fontSize: 14, color: Color(0xFF6A7282), height: 1.5),
     );
   }
 
@@ -149,7 +144,9 @@ class _UploadResumePageState extends State<UploadResumePage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
-                _hasUploadedFile ? Icons.description : Icons.cloud_upload_outlined,
+                _hasUploadedFile
+                    ? Icons.description
+                    : Icons.cloud_upload_outlined,
                 size: 32,
                 color: const Color(0xFF2B7FFF),
               ),
@@ -170,10 +167,7 @@ class _UploadResumePageState extends State<UploadResumePage> {
             const SizedBox(height: 8),
             Text(
               _hasUploadedFile ? '点击重新上传' : '或拖拽文件到此处',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF99A1AF),
-              ),
+              style: const TextStyle(fontSize: 14, color: Color(0xFF99A1AF)),
             ),
           ],
         ),
@@ -186,18 +180,11 @@ class _UploadResumePageState extends State<UploadResumePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.info_outline,
-          size: 16,
-          color: Colors.grey.shade500,
-        ),
+        Icon(Icons.info_outline, size: 16, color: Colors.grey.shade500),
         const SizedBox(width: 6),
         Text(
           '支持 PDF 格式，最大 10MB',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey.shade500,
-          ),
+          style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         ),
       ],
     );
@@ -223,20 +210,11 @@ class _UploadResumePageState extends State<UploadResumePage> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildTipItem(
-            '请确保简历内容清晰完整，包含教育背景和工作经验',
-            const Color(0xFF2B7FFF),
-          ),
+          _buildTipItem('请确保简历内容清晰完整，包含教育背景和工作经验', const Color(0xFF2B7FFF)),
           const SizedBox(height: 12),
-          _buildTipItem(
-            'AI 将分析您的简历并生成针对性的面试问题',
-            const Color(0xFF00C950),
-          ),
+          _buildTipItem('AI 将分析您的简历并生成针对性的面试问题', const Color(0xFF00C950)),
           const SizedBox(height: 12),
-          _buildTipItem(
-            '您的简历信息仅用于面试练习，我们会严格保护隐私',
-            const Color(0xFFF0B100),
-          ),
+          _buildTipItem('您的简历信息仅用于面试练习，我们会严格保护隐私', const Color(0xFFF0B100)),
         ],
       ),
     );
@@ -251,10 +229,7 @@ class _UploadResumePageState extends State<UploadResumePage> {
           width: 6,
           height: 6,
           margin: const EdgeInsets.only(top: 7),
-          decoration: BoxDecoration(
-            color: dotColor,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -293,7 +268,9 @@ class _UploadResumePageState extends State<UploadResumePage> {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: _hasUploadedFile ? () => _navigateToChat(context) : null,
+              onPressed: _hasUploadedFile
+                  ? () => _navigateToChat(context)
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2B7FFF),
                 disabledBackgroundColor: const Color(0xFFE5E7EB),
@@ -320,10 +297,7 @@ class _UploadResumePageState extends State<UploadResumePage> {
             onPressed: () => _navigateToChat(context),
             child: const Text(
               '跳过此步骤',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF6A7282),
-              ),
+              style: TextStyle(fontSize: 14, color: Color(0xFF6A7282)),
             ),
           ),
         ],
@@ -346,8 +320,37 @@ class _UploadResumePageState extends State<UploadResumePage> {
     );
   }
 
-  /// 导航到面试对话页
-  void _navigateToChat(BuildContext context) {
-    Navigator.pushNamed(context, '/chat');
+  /// 导航到面试对话页并执行匹配
+  Future<void> _navigateToChat(BuildContext context) async {
+    if (!_hasUploadedFile) {
+      Navigator.pushNamed(context, '/chat');
+      return;
+    }
+
+    final jobService = Provider.of<JobService>(context, listen: false);
+
+    // 显示加载状态
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // 模拟匹配逻辑 (目前使用硬编码的 jobId 和 resumeId)
+    final result = await jobService.matchJob(
+      'job_123',
+      'resume_456',
+      '简历文本内容...',
+    );
+
+    if (mounted) Navigator.pop(context);
+
+    if (result != null) {
+      if (mounted) {
+        Navigator.pushNamed(context, '/result', arguments: result);
+      }
+    } else {
+      if (mounted) Navigator.pushNamed(context, '/chat');
+    }
   }
 }

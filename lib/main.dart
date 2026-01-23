@@ -6,12 +6,33 @@ import 'interview_chat_page.dart';
 import 'interview_result_page.dart';
 import 'interview_history_page.dart';
 import 'history_detail_page.dart';
+import 'api/api_client.dart';
+import 'api/user_api.dart';
+import 'api/job_api.dart';
+import 'services/auth_service.dart';
+import 'services/job_service.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const AIInterviewerApp());
+  final apiClient = ApiClient();
+  final authApi = AuthApi(apiClient);
+  final userApi = UserApi(apiClient);
+  final jobApi = JobApi(apiClient);
+
+  final authService = AuthService(authApi, userApi);
+  final jobService = JobService(jobApi);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<AuthService>.value(value: authService),
+        Provider<JobService>.value(value: jobService),
+      ],
+      child: const AIInterviewerApp(),
+    ),
+  );
 }
 
-/// AI 面试官助手应用
 class AIInterviewerApp extends StatelessWidget {
   const AIInterviewerApp({super.key});
 
@@ -30,9 +51,7 @@ class AIInterviewerApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      // 初始路由
       initialRoute: '/login',
-      // 路由配置
       routes: {
         '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
@@ -41,12 +60,6 @@ class AIInterviewerApp extends StatelessWidget {
         '/result': (context) => const InterviewResultPage(),
         '/history': (context) => const InterviewHistoryPage(),
         '/history-detail': (context) => const HistoryDetailPage(),
-      },
-      // 处理未定义的路由
-      onUnknownRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const LoginPage(),
-        );
       },
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'services/auth_service.dart';
 
 /// AI 面试官助手 - 登录页面
 /// 基于 Figma 设计实现
@@ -57,7 +59,6 @@ class _LoginPageState extends State<LoginPage> {
                 // 登录表单卡片
                 _buildLoginCard(),
                 const SizedBox(height: 24),
-
               ],
             ),
           ),
@@ -149,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               TextButton(
                 onPressed: () {
-                  // TODO: 导航到注册页面
+                  _handleRegister();
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
@@ -393,9 +394,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-
   /// 处理登录
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -404,8 +404,59 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // 模拟登录成功，导航到首页
-    Navigator.pushReplacementNamed(context, '/home');
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    // 显示加载状态
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await authService.login(username, password);
+
+    // 关闭加载框
+    if (mounted) Navigator.pop(context);
+
+    if (result != null) {
+      if (mounted) Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      _showMessage('登录失败，请检查用户名或密码');
+    }
+  }
+
+  /// 处理注册 (简单演示，通常导航到专门的注册页)
+  Future<void> _handleRegister() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      _showMessage('请输入注册信息');
+      return;
+    }
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final success = await authService.register(
+      username,
+      password,
+      '$username@example.com',
+      username,
+    );
+
+    if (mounted) Navigator.pop(context);
+
+    if (success) {
+      _showMessage('注册成功，请重新登录');
+    } else {
+      _showMessage('注册失败');
+    }
   }
 
   /// 显示提示消息

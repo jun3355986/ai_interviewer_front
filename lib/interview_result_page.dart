@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'models/job.dart';
 
 /// AI 面试官助手 - 面试结果页面
 /// 基于 Figma 设计实现
@@ -15,42 +16,69 @@ class _InterviewResultPageState extends State<InterviewResultPage>
   late AnimationController _animationController;
   late Animation<double> _scoreAnimation;
 
-  // 面试结果数据
-  final int _totalScore = 85;
-  final List<StageScore> _stageScores = [
-    StageScore(name: '自我介绍', score: 8.5, maxScore: 10),
-    StageScore(name: '项目经验', score: 8, maxScore: 10),
-    StageScore(name: '技术问答', score: 9, maxScore: 10),
-  ];
-
-  final List<String> _strengths = [
-    '回答清晰有条理，逻辑性强',
-    '技术理解深入，能够举一反三',
-    '沟通表达能力优秀，善于使用具体案例',
-    '对项目背景和技术选型有深入思考',
-  ];
-
-  final List<String> _improvements = [
-    '可以更多地展示团队协作经验',
-    '建议补充更多实际项目中的量化成果',
-  ];
+  MatchResult? _matchResult;
+  late int _totalScore;
+  List<StageScore> _stageScores = [];
+  List<String> _strengths = [];
+  List<String> _improvements = [];
 
   bool _isStrengthsExpanded = true;
   bool _isImprovementsExpanded = true;
+  bool _isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is MatchResult) {
+        _matchResult = args;
+        _totalScore = _matchResult!.matchScore.toInt();
+        _stageScores =
+            _matchResult!.matchDetails
+                ?.map(
+                  (d) => StageScore(
+                    name: d.category,
+                    score: d.score,
+                    maxScore: 10,
+                  ),
+                )
+                .toList() ??
+            [];
+        _strengths =
+            _matchResult!.suggestions
+                ?.where((s) => !s.contains('建议'))
+                .toList() ??
+            [];
+        _improvements =
+            _matchResult!.suggestions
+                ?.where((s) => s.contains('建议'))
+                .toList() ??
+            [];
+      } else {
+        _totalScore = 0;
+      }
+
+      _animationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1500),
+      );
+      _scoreAnimation = Tween<double>(begin: 0, end: _totalScore.toDouble())
+          .animate(
+            CurvedAnimation(
+              parent: _animationController,
+              curve: Curves.easeOutCubic,
+            ),
+          );
+      _animationController.forward();
+      _isInitialized = true;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _scoreAnimation = Tween<double>(begin: 0, end: _totalScore.toDouble())
-        .animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
-    _animationController.forward();
+    // Animation controller initialized in didChangeDependencies
   }
 
   @override
@@ -114,10 +142,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFE5E7EB),
-            width: 0.5,
-          ),
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 0.5),
         ),
       ),
       child: Row(
@@ -187,10 +212,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
         const SizedBox(height: 8),
         const Text(
           '您的表现非常出色',
-          style: TextStyle(
-            fontSize: 15,
-            color: Color(0xFF6A7282),
-          ),
+          style: TextStyle(fontSize: 15, color: Color(0xFF6A7282)),
         ),
       ],
     );
@@ -247,10 +269,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
             const SizedBox(height: 8),
             const Text(
               '满分 100 分',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF99A1AF),
-              ),
+              style: TextStyle(fontSize: 13, color: Color(0xFF99A1AF)),
             ),
           ],
         );
@@ -312,10 +331,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
           children: [
             Text(
               stage.name,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF4A5565),
-              ),
+              style: const TextStyle(fontSize: 14, color: Color(0xFF4A5565)),
             ),
             Text(
               '${stage.score.toStringAsFixed(1)}/${stage.maxScore.toInt()}',
@@ -397,10 +413,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
       ),
       child: Column(
         children: [
@@ -418,11 +431,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
                       color: iconBgColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
-                      icon,
-                      size: 18,
-                      color: iconColor,
-                    ),
+                    child: Icon(icon, size: 18, color: iconColor),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -523,10 +532,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
               ),
               child: const Text(
                 '查看详细对话',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -542,10 +548,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
                     onPressed: () {
                       // TODO: 保存结果
                     },
-                    icon: const Icon(
-                      Icons.download,
-                      size: 18,
-                    ),
+                    icon: const Icon(Icons.download, size: 18),
                     label: const Text('保存结果'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF2B7FFF),
@@ -572,10 +575,7 @@ class _InterviewResultPageState extends State<InterviewResultPage>
                         (route) => false,
                       );
                     },
-                    icon: const Icon(
-                      Icons.home,
-                      size: 18,
-                    ),
+                    icon: const Icon(Icons.home, size: 18),
                     label: const Text('返回首页'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF6A7282),
@@ -604,11 +604,7 @@ class StageScore {
   final double score;
   final double maxScore;
 
-  StageScore({
-    required this.name,
-    required this.score,
-    required this.maxScore,
-  });
+  StageScore({required this.name, required this.score, required this.maxScore});
 }
 
 /// 圆形进度绘制器
